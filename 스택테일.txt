@@ -42,6 +42,7 @@ void Pop() {
 	}
 	else if (bottom == top) {
 		bottom = top = NULL;
+		Count--;
 		return;
 	}
 	else {
@@ -52,6 +53,7 @@ void Pop() {
 		stack->next = temp->next;
 		bottom = stack;
 		free(temp);
+		Count--;
 		return;
 	}
 }
@@ -72,12 +74,12 @@ void isEmpty() {
 	stack = top;
 
 	if (top == NULL) {
-		printf("ÇöÀç ½ºÅÃÀº ºñ¾îÀÖ´Â »óÅÂÀÔ´Ï´Ù.\n");
+		printf("í˜„ì¬ ìŠ¤íƒì€ ë¹„ì–´ìˆëŠ” ìƒíƒœì…ë‹ˆë‹¤.\n");
 		Interval();
 		return;
 	}
 
-	printf("ÇöÀç ½ºÅÃÀº ºñ¾îÀÖÁö ¾ÊÀ¸¸ç, %d°³ÀÇ µ¥ÀÌÅÍ°¡ µé¾îÀÖ½À´Ï´Ù.\n", Count);
+	printf("í˜„ì¬ ìŠ¤íƒì€ ë¹„ì–´ìˆì§€ ì•Šìœ¼ë©°, %dê°œì˜ ë°ì´í„°ê°€ ë“¤ì–´ìˆìŠµë‹ˆë‹¤.\n", Count);
 	Interval();
 	return;
 }
@@ -87,14 +89,14 @@ void main() {
 
 	while (1)
 	{
-		printf("¹øÈ£¸¦ ¼±ÅÃÇÏ¿© ÁÖ½Ê½Ã¿À.\n 1: Push\n 2. Pop\n 3. ISEmpty\n 4. EXIT\n");
+		printf("ë²ˆí˜¸ë¥¼ ì„ íƒí•˜ì—¬ ì£¼ì‹­ì‹œì˜¤.\n 1: Push\n 2. Pop\n 3. ISEmpty\n 4. EXIT\n");
 		scanf("%d", &s);
 		Interval();
 
 		switch (s) {
 
 		case 1:
-			printf("ÀÔ·ÂÇÒ µ¥ÀÌÅÍ¸¦ Àû¾îÁÖ½Ê½Ã¿À.\n");
+			printf("ì…ë ¥í•  ë°ì´í„°ë¥¼ ì ì–´ì£¼ì‹­ì‹œì˜¤.\n");
 			scanf("%d", &x);
 			Interval();
 			Push(x);
@@ -114,7 +116,7 @@ void main() {
 			return;
 
 		default:
-			printf("°ªÀ» Àß¸ø ÀÔ·ÂÇÏ¿´½À´Ï´Ù! ´Ù½ÃÀÔ·ÂÇØÁÖ½Ê½Ã¿À\n");
+			printf("ê°’ì„ ì˜ëª» ì…ë ¥í•˜ì˜€ìŠµë‹ˆë‹¤! ë‹¤ì‹œì…ë ¥í•´ì£¼ì‹­ì‹œì˜¤\n");
 			Interval();
 			break;
 		}
