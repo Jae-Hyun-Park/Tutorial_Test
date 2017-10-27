@@ -8,7 +8,7 @@ struct Node {
 
 struct Node *front = NULL;
 struct Node *rear = NULL;
-struct Node *stack = front;
+struct Node *queue = NULL;
 int Count = 0;
 
 void Interval() {
@@ -49,11 +49,11 @@ void DeQueue() {
 }
 
 void Print() {
-	stack = front;
+	queue = front;
 
-	while (stack != NULL) {
-		printf("%d\n", stack->data);
-		stack = stack->next;
+	while (queue != NULL) {
+		printf("%d\n", queue->data);
+		queue = queue->next;
 	}
 
 	Interval();
@@ -61,15 +61,15 @@ void Print() {
 }
 
 void isEmpty() {
-	stack = front;
+	queue = front;
 
 	if (front == NULL) {
-		printf("ÇöÀç ½ºÅÃÀº ºñ¾îÀÖ´Â »óÅÂÀÔ´Ï´Ù.\n");
+		printf("í˜„ì¬ íëŠ” ë¹„ì–´ìˆëŠ” ìƒíƒœì…ë‹ˆë‹¤.\n");
 		Interval();
 		return;
 	}
 
-	printf("ÇöÀç ½ºÅÃÀº ºñ¾îÀÖÁö ¾ÊÀ¸¸ç, %d°³ÀÇ µ¥ÀÌÅÍ°¡ µé¾îÀÖ½À´Ï´Ù.\n", Count);
+	printf("í˜„ì¬ íëŠ” ë¹„ì–´ìˆì§€ ì•Šìœ¼ë©°, %dê°œì˜ ë°ì´í„°ê°€ ë“¤ì–´ìˆìŠµë‹ˆë‹¤.\n", Count);
 	Interval();
 	return;
 }
@@ -79,14 +79,14 @@ void main() {
 
 	while (1)
 	{
-		printf("¹øÈ£¸¦ ¼±ÅÃÇÏ¿© ÁÖ½Ê½Ã¿À.\n 1: EnQueue\n 2. DeQueue\n 3. ISEmpty\n 4. EXIT\n");
+		printf("ë²ˆí˜¸ë¥¼ ì„ íƒí•˜ì—¬ ì£¼ì‹­ì‹œì˜¤.\n 1: EnQueue\n 2. DeQueue\n 3. ISEmpty\n 4. EXIT\n");
 		scanf("%d", &s);
 		Interval();
 
 		switch (s) {
 
 		case 1:
-			printf("ÀÔ·ÂÇÒ µ¥ÀÌÅÍ¸¦ Àû¾îÁÖ½Ê½Ã¿À.\n");
+			printf("ì…ë ¥í•  ë°ì´í„°ë¥¼ ì ì–´ì£¼ì‹­ì‹œì˜¤.\n");
 			scanf("%d", &x);
 			Interval();
 			EnQueue(x);
@@ -106,7 +106,7 @@ void main() {
 			return;
 
 		default:
-			printf("°ªÀ» Àß¸ø ÀÔ·ÂÇÏ¿´½À´Ï´Ù! ´Ù½ÃÀÔ·ÂÇØÁÖ½Ê½Ã¿À\n");
+			printf("ê°’ì„ ì˜ëª» ì…ë ¥í•˜ì˜€ìŠµë‹ˆë‹¤! ë‹¤ì‹œì…ë ¥í•´ì£¼ì‹­ì‹œì˜¤\n");
 			Interval();
 			break;
 		}
