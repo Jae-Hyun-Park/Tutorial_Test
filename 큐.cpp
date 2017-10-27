@@ -8,7 +8,7 @@ struct Node {
 
 struct Node *front = NULL;
 struct Node *rear = NULL;
-struct Node *queue = front;
+struct Node *queue = NULL;
 int Count = 0;
 
 void Interval() {
