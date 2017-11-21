@@ -22,6 +22,9 @@ void quick_sort(int* array, int left, int right) {
 			if (L != R) {
 				swap(&array[L], &array[R]);
 			}
+			else if (L == R) {
+				swap(&array[L], &array[mid]);
+			}
 			L++;
 			R--;
 		}
