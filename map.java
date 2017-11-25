@@ -5,21 +5,19 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.os.Environment;
-import android.support.v7.app.AppCompatActivity;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnTouchListener;
-import android.widget.ImageView;
+import android.widget.Button;
 
 
 public class map extends AppCompatActivity {
 
     Bitmap iBitmap;
-    Bitmap resizedBitmap;
     Canvas iCanvas;
     Paint paint;
     Paint linepaint;
@@ -144,95 +142,209 @@ public class map extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_map);
         vm = new BitmapImageView(this);
         setContentView(vm);
         distCurrent = 1; //Dummy default distance
         dist0 = 1;   //Dummy default distance
         touchState = IDLE;
+        setContentView(R.layout.content_map);
+        Button btn1 = (Button)findViewById(R.id.findroute);
     }
 
-        public class BitmapImageView extends View {
+    public class BitmapImageView extends View {
 
-            public BitmapImageView(Context context){
-                super(context);
-                paint = new Paint();
-                linepaint = new Paint();
-                textpaint = new Paint();
+        public BitmapImageView(Context context) {
+            super(context);
+            paint = new Paint();
+            linepaint = new Paint();
+            textpaint = new Paint();
 
-            }
-
-            public BitmapImageView(Context context, AttributeSet attr){
-                super(context, attr);
-                paint = new Paint();
-                linepaint = new Paint();
-                textpaint = new Paint();
-            }
-
-            @Override
-            protected void onDraw(Canvas canvas) {
-                super.onDraw(canvas);
-                Log.i("OnDraw","enter");
-
-                iBitmap = Bitmap.createBitmap(2070, 1610, Bitmap.Config.ARGB_8888);
-                iCanvas = new Canvas();
-                iCanvas.setBitmap(iBitmap);
-
-                linepaint.setColor(Color.rgb(128,128,128));  // 회색 (테이블간 경계선)
-                linepaint.setStrokeWidth(10);
-                textpaint.setColor(Color.rgb(0,0,0));          // 검정색 (텍스트)
-                textpaint.setTextSize(20);
-
-                for(int i = 0; i < 100; i++){
-                    for(int j = 0; j < 100; j++){
-                        if(maps[i][j] == 1){
-                            paint.setColor(Color.rgb(255,250,205));
-                            iCanvas.drawRect(Left, Top, Right, Bottom, paint);
-                        }else if(maps[i][j] == 0){
-                            paint.setColor(Color.rgb(144,238,144));
-                            iCanvas.drawRect(Left, Top, Right, Bottom, paint);
-                        }else if(maps[i][j] == 2 ) {
-                            paint.setColor(Color.rgb(255, 250, 205));
-                            iCanvas.drawRect(Left, Top, Right, Bottom, paint);
-                            if (maps[i][j + 1] == 1) {
-                                Left = Right;
-                                iCanvas.drawLine(Left, Top, Right, Bottom, linepaint);
-                                Left -= 21;
-                            } else if (maps[i][j + 1] == 2 || maps[i][j + 1] == 0) {
-                                paint.setColor(Color.rgb(255, 250, 205));
-                                iCanvas.drawRect(Left, Top, Right, Bottom, paint);
-                                Top = Bottom;
-                                iCanvas.drawLine(Left, Top, Right, Bottom, linepaint);
-                                Top -= 16;
-                            }
-                        }
-                        if(j == 99){
-                            Left = 0;
-                            Right = 21;
-                            Top += 16;
-                            Bottom += 16;
-                        }else{
-                            Left += 21;
-                            Right += 21;
-                        }
-                    }
-                    Log.i("OnDraw1","enter");
-
-                }
-
-                if(iBitmap != null){
-                    canvas.drawBitmap(iBitmap, 0, 0, null);
-                }
-                bmpWidth = iBitmap.getWidth();
-                bmpHeight = iBitmap.getHeight();
-                Log.i("diffX", String.valueOf(diffX));
-                Log.i("diffY", String.valueOf(diffY));
-                setOnTouchListener(MyOnTouchListener);
-            }
         }
 
+        public BitmapImageView(Context context, AttributeSet attr) {
+            super(context, attr);
+            paint = new Paint();
+            linepaint = new Paint();
+            textpaint = new Paint();
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+            Log.i("OnDraw", "enter");
+
+            iBitmap = Bitmap.createBitmap(2000, 1800, Bitmap.Config.ARGB_8888);
+            iCanvas = new Canvas();
+            iCanvas.setBitmap(iBitmap);
+
+            linepaint.setColor(Color.rgb(128, 128, 128));  // 회색 (테이블간 경계선)
+            linepaint.setStrokeWidth(10);
+            textpaint.setColor(Color.rgb(0, 0, 0));          // 검정색 (텍스트)
+            textpaint.setTypeface(Typeface.create((String) null, Typeface.BOLD));
+
+            for (int i = 0; i < 100; i++) {
+                for (int j = 0; j < 100; j++) {
+                    if (maps[i][j] == 1) {                         // 벽
+                        paint.setColor(Color.rgb(255, 250, 205));
+                        iCanvas.drawRect(Left, Top, Right, Bottom, paint);
+                    } else if (maps[i][j] == 0) {                        // 길
+                        paint.setColor(Color.rgb(144, 238, 144));
+                        iCanvas.drawRect(Left, Top, Right, Bottom, paint);
+                    } else if (maps[i][j] == 2) {                            // 물품 구분선
+                        paint.setColor(Color.rgb(255, 250, 205));
+                        iCanvas.drawRect(Left, Top, Right, Bottom, paint);
+                        if (maps[i][j + 1] == 1) {
+                            Left = Right;
+                            iCanvas.drawLine(Left, Top, Right, Bottom, linepaint);
+                            Left -= 21;
+                        } else if (maps[i][j + 1] == 2 || maps[i][j + 1] == 0) {
+                            paint.setColor(Color.rgb(255, 250, 205));
+                            iCanvas.drawRect(Left, Top, Right, Bottom, paint);
+                            Top = Bottom;
+                            iCanvas.drawLine(Left, Top, Right, Bottom, linepaint);
+                            Top -= 16;
+                        }
+                    }
+                    if (i == 7 && j == 5) {                                   // 텍스트 그리는 부분
+                        textpaint.setTextSize(80);
+                        iCanvas.drawText("완구", Left, Top, textpaint);
+                    } else if (i == 5 && j == 22) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("자동차용품", Left, Top, textpaint);
+                    } else if (i == 7 && j == 40) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("침장/커튼", Left, Top, textpaint);
+                    } else if (i == 7 && j == 58) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("가 구", Left, Top, textpaint);
+                    } else if (i == 7 && j == 76) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("욕실/수납", Left, Top, textpaint);
+                    } else if (i == 9 && j == 23) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("조명/공구", Left, Top, textpaint);
+                    } else if (i == 9 && j == 93) {
+                        textpaint.setTextSize(40);
+                        iCanvas.drawText("기저귀", Left, Top, textpaint);
+                    } else if (i == 18 && j == 93) {
+                        textpaint.setTextSize(40);
+                        iCanvas.drawText("생리대", Left, Top, textpaint);
+                    } else if (i == 23 && j == 73) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("일상용품", Left, Top, textpaint);
+                    } else if (i == 25 && j == 20) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("문구/팬시", Left, Top, textpaint);
+                    } else if (i == 25 && j == 44) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("식탁/조리용품", Left, Top, textpaint);
+                    } else if (i == 37 && j == 3) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("서적", Left, Top, textpaint);
+                    } else if (i == 40 && j == 20) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("화원", Left, Top, textpaint);
+                    } else if (i == 40 && j == 44) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("식탁/조리용품", Left, Top, textpaint);
+                    } else if (i == 42 && j == 94) {
+                        textpaint.setTextSize(40);
+                        iCanvas.drawText("청과", Left, Top, textpaint);
+                    } else if (i == 50 && j == 20) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("음료", Left, Top, textpaint);
+                    } else if (i == 50 && j == 32) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("스낵", Left, Top, textpaint);
+                    } else if (i == 50 && j == 44) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("건해산물", Left, Top, textpaint);
+                    } else if (i == 50 && j == 71) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("청과야채", Left, Top, textpaint);
+                    } else if (i == 52 && j == 94) {
+                        textpaint.setTextSize(40);
+                        iCanvas.drawText("야채", Left, Top, textpaint);
+                    } else if (i == 63 && j == 25) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("일반식품", Left, Top, textpaint);
+                    } else if (i == 63 && j == 44) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("유제품", Left, Top, textpaint);
+                    } else if (i == 63 && j == 92) {
+                        textpaint.setTextSize(40);
+                        iCanvas.drawText("반찬젓갈", Left, Top, textpaint);
+                    } else if (i == 68 && j == 3) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("주류", Left, Top, textpaint);
+                    } else if (i == 70 && j == 20) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("양곡", Left, Top, textpaint);
+                    } else if (i == 70 && j == 33) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("조미료", Left, Top, textpaint);
+                    } else if (i == 70 && j == 47) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("냉동가공", Left, Top, textpaint);
+                    } else if (i == 72 && j == 71) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("냉동선어", Left, Top, textpaint);
+                    } else if (i == 72 && j == 93) {
+                        textpaint.setTextSize(40);
+                        iCanvas.drawText("어패류", Left, Top, textpaint);
+                    } else if (i == 81 && j == 17) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("즉석반찬", Left, Top, textpaint);
+                    } else if (i == 81 && j == 30) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("계란/계육/돈육", Left, Top, textpaint);
+                    } else if (i == 81 && j == 50) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("5분조리", Left, Top, textpaint);
+                    } else if (i == 85 && j == 73) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("회/스시", Left, Top, textpaint);
+                    } else if (i == 85 && j == 85) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("선어", Left, Top, textpaint);
+                    } else if (i == 94 && j == 12) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("즉석조리", Left, Top, textpaint);
+                    } else if (i == 94 && j == 28) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("햄가공", Left, Top, textpaint);
+                    } else if (i == 94 && j == 40) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("수입육", Left, Top, textpaint);
+                    } else if (i == 94 && j == 53) {
+                        textpaint.setTextSize(50);
+                        iCanvas.drawText("정육", Left, Top, textpaint);
+                    }
+
+                    if (j == 99) {
+                        Left = 0;
+                        Right = 20;
+                        Top += 18;
+                        Bottom += 18;
+                    } else {
+                        Left += 20;
+                        Right += 20;
+                    }
+                }
+            }
+            Log.i("X", String.valueOf(bmpx - diffX));
+            Log.i("Y", String.valueOf(bmpy - diffY));
+            if (iBitmap != null) {
+                canvas.drawBitmap(iBitmap, bmpx - diffX, bmpy - diffY, null);
+            }
+            bmpWidth = iBitmap.getWidth();
+            bmpHeight = iBitmap.getHeight();
+            setOnTouchListener(MyOnTouchListener);
+        }
+
+
         protected void drawMatrix() {
-            Log.i("drawMatrix","enter");
+            Log.i("drawMatrix", "enter");
             float curScale = distCurrent / dist0;
             if (curScale < 0.1) {
                 curScale = 0.1f;
@@ -245,11 +357,11 @@ public class map extends AppCompatActivity {
             vm.invalidate();
         }
 
-        protected void drawMoveMatrix(){
+        protected void drawMoveMatrix() {
             Log.i("drawMoveMatrix", "enter");
             vm.invalidate();
-            bmpsavex = bmpmovex - bmpsavex;
-            bmpsavey = bmpmovey = bmpsavey;
+            bmpsavex = bmpmovex;
+            bmpsavey = bmpmovey;
         }
 
         OnTouchListener MyOnTouchListener
@@ -263,7 +375,7 @@ public class map extends AppCompatActivity {
                 switch (event.getAction() & MotionEvent.ACTION_MASK) {
                     case MotionEvent.ACTION_DOWN:
                         //A pressed gesture has started, the motion contains the initial starting location.
-                        Log.i("touch","enter");
+                        Log.i("touch", "enter");
                         bmpsavex = event.getX();
                         bmpsavey = event.getY();
                         touchState = TOUCH;
@@ -312,5 +424,6 @@ public class map extends AppCompatActivity {
             }
 
         };
+    }
 }
 
