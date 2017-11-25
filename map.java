@@ -14,11 +14,13 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 
+import static java.lang.Math.abs;
+
 
 public class map extends AppCompatActivity {
 
     Bitmap iBitmap;
-    Canvas iCanvas;
+    Canvas iCanvas = new Canvas();
     Paint paint;
     Paint linepaint;
     Paint textpaint;
@@ -32,6 +34,7 @@ public class map extends AppCompatActivity {
     int bmpx, bmpy = 0;
     float diffX, diffY = 0;
     int touchState;
+    int buttonState = 1;
     final int IDLE = 0;
     final int TOUCH = 1;
     final int PINCH = 2;
@@ -139,6 +142,20 @@ public class map extends AppCompatActivity {
             {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
             {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
 
+     byte[][] f = new byte[100][100];
+
+    int startX = 99;
+    int startY = 77;
+    int GoalX = 0;
+    int GoalY = 0;
+    int LeftValue = 0;
+    int RightValue = 0;
+    int TopValue = 0;
+    int BottomValue = 0;
+    int NowValue = 0;
+    int GoalXValue;
+    int GoalYValue;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -147,7 +164,7 @@ public class map extends AppCompatActivity {
         distCurrent = 1; //Dummy default distance
         dist0 = 1;   //Dummy default distance
         touchState = IDLE;
-        setContentView(R.layout.content_map);
+        //setContentView(R.layout.content_map);
         Button btn1 = (Button)findViewById(R.id.findroute);
     }
 
@@ -167,27 +184,99 @@ public class map extends AppCompatActivity {
             linepaint = new Paint();
             textpaint = new Paint();
         }
+        void assess(int y, int x) {
+
+            int k = 0;
+            int count = 0;
+            int Valuex[] = new int[2];
+            int Valuey[] = new int[2];
+            int TurnValue[] = new int[2];
+
+            for (int i = 0; i < 100; i++) {
+                for (int j = 0; j < 100; j++) {
+                    if (maps[i][j] == 3) {
+                        if (y == startY && x == startX) {
+                            count++;
+                            Valuex[k] = j;
+                            Valuey[k] = i;
+
+                            if (count > 1 && (Valuey[0] < Valuey[k] || Valuex[0] < Valuex[k])) {
+                                Valuex[0] = Valuex[k];
+                                Valuey[0] = Valuey[k];
+                            }
+                            k = 1;
+                        }
+                        if (y != startY && x != startX) {
+                            count++;
+                            Valuex[k] = abs(j - x);
+                            Valuey[k] = abs(i - y);
+                            TurnValue[k] = Valuex[k] + Valuey[k];
+                            Valuex[k] = j;
+                            Valuey[k] = i;
+
+                            if (count > 1 && TurnValue[0] > TurnValue[k]) {
+                                TurnValue[0] = TurnValue[k];
+                                Valuex[0] = Valuex[k];
+                                Valuey[0] = Valuey[k];
+                            }
+                            k = 1;
+                        }
+                    }
+                }
+            }
+
+            if (count == 0) {
+                GoalX = 99;
+                GoalY = 30;
+                return;
+            }
+            else if (count > 0) {
+                GoalX = Valuex[0];
+                GoalY = Valuey[0];
+                return;
+            }
+        } // 판별 함수
 
         @Override
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
             Log.i("OnDraw", "enter");
 
+            maps[84][34] = 3;
+            maps[12][23] = 3;
+            maps[54][22] = 3;
             iBitmap = Bitmap.createBitmap(2000, 1800, Bitmap.Config.ARGB_8888);
-            iCanvas = new Canvas();
             iCanvas.setBitmap(iBitmap);
-
             linepaint.setColor(Color.rgb(128, 128, 128));  // 회색 (테이블간 경계선)
             linepaint.setStrokeWidth(10);
             textpaint.setColor(Color.rgb(0, 0, 0));          // 검정색 (텍스트)
             textpaint.setTypeface(Typeface.create((String) null, Typeface.BOLD));
 
+            print();
+            assess(startY, startX);
+
+            if (buttonState == 1){
+                linepaint.setColor(Color.rgb(255, 0, 0));  // 회색 (테이블간 경계선)
+                find(startY, startX);
+                buttonState = 0;
+            }
+            bmpx = 0;
+            Log.i("X", String.valueOf(bmpx - diffX));
+            Log.i("Y", String.valueOf(bmpy - diffY));
+            if (iBitmap != null) {
+                canvas.drawBitmap(iBitmap, bmpx - diffX, bmpy - diffY, null);
+            }
+            bmpWidth = iBitmap.getWidth();
+            bmpHeight = iBitmap.getHeight();
+            setOnTouchListener(MyOnTouchListener);
+        }
+        void print(){
             for (int i = 0; i < 100; i++) {
                 for (int j = 0; j < 100; j++) {
                     if (maps[i][j] == 1) {                         // 벽
                         paint.setColor(Color.rgb(255, 250, 205));
                         iCanvas.drawRect(Left, Top, Right, Bottom, paint);
-                    } else if (maps[i][j] == 0) {                        // 길
+                    } else if (maps[i][j] != 1 && maps[i][j] != 2) {                        // 길
                         paint.setColor(Color.rgb(144, 238, 144));
                         iCanvas.drawRect(Left, Top, Right, Bottom, paint);
                     } else if (maps[i][j] == 2) {                            // 물품 구분선
@@ -320,7 +409,6 @@ public class map extends AppCompatActivity {
                         textpaint.setTextSize(50);
                         iCanvas.drawText("정육", Left, Top, textpaint);
                     }
-
                     if (j == 99) {
                         Left = 0;
                         Right = 20;
@@ -332,16 +420,277 @@ public class map extends AppCompatActivity {
                     }
                 }
             }
-            Log.i("X", String.valueOf(bmpx - diffX));
-            Log.i("Y", String.valueOf(bmpy - diffY));
-            if (iBitmap != null) {
-                canvas.drawBitmap(iBitmap, bmpx - diffX, bmpy - diffY, null);
+        }  // 지도 그리기 함수
+        void MoveAssess(int y, int x){
+            if (x + 1 < 100 && maps[y][x + 1] != 1 && f[y][x + 1] == 0) {
+                GoalXValue = abs(GoalX - (x + 1));
+                GoalYValue = abs(GoalY - y);
+                RightValue = NowValue + GoalXValue + GoalYValue;
+                Log.i("RightValue", String.valueOf(RightValue));
             }
-            bmpWidth = iBitmap.getWidth();
-            bmpHeight = iBitmap.getHeight();
-            setOnTouchListener(MyOnTouchListener);
-        }
+            if (x - 1 >= 0 && maps[y][x - 1] != 1 && f[y][x - 1] == 0) {
+                GoalXValue = abs(GoalX - (x - 1));
+                GoalYValue = abs(GoalY - y);
+                LeftValue = NowValue + GoalXValue + GoalYValue;
+                Log.i("LeftValue", String.valueOf(LeftValue));
+            }
+            if (y - 1 >= 0 && maps[y - 1][x] != 1 && f[y - 1][x] == 0) {
+                GoalXValue = abs(GoalX - x);
+                GoalYValue = abs(GoalY - (y - 1));
+                TopValue = NowValue + GoalXValue + GoalYValue;
+                Log.i("TopValue", String.valueOf(TopValue));
+            }
+            if (y + 1 < 100 && maps[y + 1][x] != 1 && f[y + 1][x] == 0) {
+                GoalXValue = abs(GoalX - x);
+                GoalYValue = abs(GoalY - (y + 1));
+                BottomValue = NowValue + GoalXValue + GoalYValue;
+                Log.i("BottomValue", String.valueOf(BottomValue));
+            }
+        } // 이동 평가 함수
+        void LeftMoveAssess(int starty, int startx, int y, int x) {
+            if (GoalX <= x) {
+                if (GoalY <= y) {
+                    Log.i("왼쪽", "상단");
+                    if (RightValue != 0) {
+                        if (LeftValue == 0 || (LeftValue != 0 && RightValue < LeftValue)) {
+                            if (TopValue == 0 || (TopValue != 0 && RightValue < TopValue)) {
+                                if (BottomValue == 0 || (BottomValue != 0 && RightValue <= BottomValue)) {
+                                    Log.i("RightValue go", String.valueOf(RightValue));
+                                    iCanvas.drawLine(x*20, y*18, (x+1)*20, y*18, linepaint);
+                                    find(y, x + 1);
+                                }
+                            }
+                        }
+                    }
+                    if (LeftValue != 0) {
+                        if (RightValue == 0 || (RightValue != 0 && LeftValue <= RightValue)) {
+                            if (TopValue == 0 || (TopValue != 0 && LeftValue <= TopValue)) {
+                                if (BottomValue == 0 || (BottomValue != 0 && LeftValue <= BottomValue)) {
+                                    Log.i("LeftValue go", String.valueOf(LeftValue));
+                                    iCanvas.drawLine((x-1)*20, y*18, x*20, y*18, linepaint);
+                                    find(y, x - 1);
+                                }
+                            }
+                        }
+                    }
+                    if (TopValue != 0) {
+                        if (RightValue == 0 || (RightValue != 0 && TopValue <= RightValue)) {
+                            if (LeftValue == 0 || (LeftValue != 0 && TopValue < LeftValue)) {
+                                if (BottomValue == 0 || (BottomValue != 0 && TopValue <= BottomValue)) {
+                                    Log.i("TopValue go", String.valueOf(TopValue));
+                                    iCanvas.drawLine(x*20, (y-1)*18, x*20, y*18, linepaint);
+                                    find(y - 1, x);
+                                }
+                            }
+                        }
+                    }
+                    if (BottomValue != 0) {
+                        if (RightValue == 0 || (RightValue != 0 && BottomValue < RightValue)) {
+                            if (LeftValue == 0 || (LeftValue != 0 && BottomValue < LeftValue)) {
+                                if (TopValue == 0 || (TopValue != 0 && BottomValue < TopValue)) {
+                                    Log.i("BottomValue go", String.valueOf(BottomValue));
+                                    iCanvas.drawLine(x*20, y*18, x*20, (y+1)*18, linepaint);
+                                    find(y + 1, x);
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (GoalY > y) {
+                    Log.i("왼쪽", "하단");
+                    if (RightValue != 0) {
+                        if (LeftValue == 0 || (LeftValue != 0 && RightValue < LeftValue)) {
+                            if (TopValue == 0 || (TopValue != 0 && RightValue <= TopValue)) {
+                                if (BottomValue == 0 || (BottomValue != 0 && RightValue < BottomValue)) {
+                                    Log.i("RightValue go", String.valueOf(RightValue));
+                                    iCanvas.drawLine(x*20, y*18, (x+1)*20, y*18, linepaint);
+                                    find(y, x + 1);
+                                }
+                            }
+                        }
+                    }
+                    if (LeftValue != 0) {
+                        if (RightValue == 0 || (RightValue != 0 && LeftValue <= RightValue)) {
+                            if (TopValue == 0 || (TopValue != 0 && LeftValue <= TopValue)) {
+                                if (BottomValue == 0 || (BottomValue != 0 && LeftValue <= BottomValue)) {
+                                    Log.i("LeftValue go", String.valueOf(LeftValue));
+                                    iCanvas.drawLine((x-1)*20, y*18, x*20, y*18, linepaint);
+                                    find(y, x - 1);
+                                }
+                            }
+                        }
+                    }
+                    if (TopValue != 0) {
+                        if (RightValue == 0 || (RightValue != 0 && TopValue < RightValue)) {
+                            if (LeftValue == 0 || (LeftValue != 0 && TopValue < LeftValue)) {
+                                if (BottomValue == 0 || (BottomValue != 0 && TopValue < BottomValue)) {
+                                    Log.i("TopValue go", String.valueOf(TopValue));
+                                    iCanvas.drawLine(x*20, (y-1)*18, x*20, y*18, linepaint);
+                                    find(y - 1, x);
+                                }
+                            }
+                        }
+                    }
+                    if (BottomValue != 0) {
+                        if (RightValue == 0 || (RightValue != 0 && BottomValue <= RightValue)) {
+                            if (LeftValue == 0 || (LeftValue != 0 && BottomValue < LeftValue)) {
+                                if (TopValue == 0 || (TopValue != 0 && BottomValue <= TopValue)) {
+                                    Log.i("BottomValue go", String.valueOf(BottomValue));
+                                    iCanvas.drawLine(x*20, y*18, x*20, (y+1)*18, linepaint);
+                                    find(y + 1, x);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } // 왼쪽 이동 평가 함수
+        void RightMoveAssess(int starty, int startx, int y, int x) {
+            if (GoalX > x) {
+                if (GoalY <= y) {
+                    Log.i("오른쪽", "상단");
+                    if (RightValue != 0) {
+                        if (LeftValue == 0 || (LeftValue != 0 && RightValue <= LeftValue)) {
+                            if (TopValue == 0 || (TopValue != 0 && RightValue <= TopValue)) {
+                                if (BottomValue == 0 || (BottomValue != 0 && RightValue <= BottomValue)) {
+                                    Log.i("RightValue go", String.valueOf(RightValue));
+                                    iCanvas.drawLine(x*20, y*18, (x+1)*20, y*18, linepaint);
+                                    find(y, x + 1);
+                                }
+                            }
+                        }
+                    }
+                    if (LeftValue != 0) {
+                        if (RightValue == 0 || (RightValue != 0 && LeftValue < RightValue)) {
+                            if (TopValue == 0 || (TopValue != 0 && LeftValue < TopValue)) {
+                                if (BottomValue == 0 || (BottomValue != 0 && LeftValue <= BottomValue)) {
+                                    Log.i("LeftValue go", String.valueOf(LeftValue));
+                                    iCanvas.drawLine((x-1)*20, y*18, x*20, y*18, linepaint);
+                                    find(y, x - 1);
+                                }
+                            }
+                        }
+                    }
+                    if (TopValue != 0) {
+                        if (RightValue == 0 || (RightValue != 0 && TopValue < RightValue)) {
+                            if (LeftValue == 0 || (LeftValue != 0 && TopValue <= LeftValue)) {
+                                if (BottomValue == 0 || (BottomValue != 0 && TopValue <= BottomValue)) {
+                                    Log.i("TopValue go", String.valueOf(TopValue));
+                                    iCanvas.drawLine(x*20, (y-1)*18, x*20, y*18, linepaint);
+                                    find(y - 1, x);
+                                }
+                            }
+                        }
+                    }
+                    if (BottomValue != 0) {
+                        if (RightValue == 0 || (RightValue != 0 && BottomValue < RightValue)) {
+                            if (LeftValue == 0 || (LeftValue != 0 && BottomValue < LeftValue)) {
+                                if (TopValue == 0 || (TopValue != 0 && BottomValue < TopValue)) {
+                                    Log.i("BottomValue go", String.valueOf(BottomValue));
+                                    iCanvas.drawLine(x*20, y*18, x*20, (y+1)*18, linepaint);
+                                    find(y + 1, x);
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (GoalY > y) {
+                    Log.i("오른쪽", "하단");
+                    if (RightValue != 0) {
+                        if (LeftValue == 0 || (LeftValue != 0 && RightValue <= LeftValue)) {
+                            if (TopValue == 0 || (TopValue != 0 && RightValue <= TopValue)) {
+                                if (BottomValue == 0 || (BottomValue != 0 && RightValue <= BottomValue)) {
+                                    Log.i("RightValue go", String.valueOf(RightValue));
+                                    iCanvas.drawLine(x*20, y*18, (x+1)*20, y*18, linepaint);
+                                    find(y, x + 1);
+                                }
+                            }
+                        }
+                    }
+                    if (LeftValue != 0) {
+                        if (RightValue == 0 || (RightValue != 0 && LeftValue < RightValue)) {
+                            if (TopValue == 0 || (TopValue != 0 && LeftValue <= TopValue)) {
+                                if (BottomValue == 0 || (BottomValue != 0 && LeftValue < BottomValue)) {
+                                    Log.i("LeftValue go", String.valueOf(LeftValue));
+                                    iCanvas.drawLine((x-1)*20, y*18, x*20, y*18, linepaint);
+                                    find(y, x - 1);
+                                }
+                            }
+                        }
+                    }
+                    if (TopValue != 0) {
+                        if (RightValue == 0 || (RightValue != 0 && TopValue < RightValue)) {
+                            if (LeftValue == 0 || (LeftValue != 0 && TopValue < LeftValue)) {
+                                if (BottomValue == 0 || (BottomValue != 0 && TopValue < BottomValue)) {
+                                    Log.i("TopValue go", String.valueOf(TopValue));
+                                    iCanvas.drawLine(x*20, (y-1)*18, x*20, y*18, linepaint);
+                                    find(y - 1, x);
+                                }
+                            }
+                        }
+                    }
+                    if (BottomValue != 0) {
+                        if (RightValue == 0 || (RightValue != 0 && BottomValue < RightValue)) {
+                            if (LeftValue == 0 || (LeftValue != 0 && BottomValue <= LeftValue)) {
+                                if (TopValue == 0 || (TopValue != 0 && BottomValue <= TopValue)) {
+                                    Log.i("BottomValue go", String.valueOf(BottomValue));
+                                    iCanvas.drawLine(x*20, y*18, x*20, (y+1)*18, linepaint);
+                                    find(y + 1, x);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }  // 오른쪽 이동 평가 함수
+        void find(int y, int x) {
 
+            LeftValue = 0;
+            RightValue = 0;
+            TopValue = 0;
+            BottomValue = 0;
+            f[y][x] = 1;
+            NowValue++;
+
+            Log.i("--------------------", "--------------------------");
+            Log.i("nowx", String.valueOf(x));
+            Log.i("nowy", String.valueOf(y));
+            Log.i("다음목적지x", String.valueOf(GoalX));
+            Log.i("다음목적지y", String.valueOf(GoalY));
+            if (y == GoalY && x == GoalX) {
+                for (int i = 0; i < 100; i++) {
+                    for (int j = 0; j < 100; j++) {
+                        f[i][j] = 0;
+                    }
+                }
+                if (GoalX == 99 && GoalY == 30) {
+                    Log.i("Find", "end");
+                    return;
+                }
+                if (maps[y][x] == 3) {
+                    maps[y][x] = 0;
+                    assess(y, x);
+                    if (GoalX != 99 && GoalY != 30) {
+                        startX = x;
+                        startY = y;
+                        Log.i("First", "Turnning Point");
+                        Log.i("다음목적지x", String.valueOf(GoalX));
+                        Log.i("다음목적지y", String.valueOf(GoalY));
+                        find(y, x);
+                        return;
+                    }
+                    startX = x;
+                    startY = y;
+                    Log.i("Last",  "Turnning Point");
+                    find(y, x);
+                    return;
+                }
+            }
+            MoveAssess(y, x);
+            LeftMoveAssess(startY, startX, y, x);
+            RightMoveAssess(startY, startX, y, x);
+            f[y][x] = 0;
+        }  // 길 찾아가기 함수
 
         protected void drawMatrix() {
             Log.i("drawMatrix", "enter");
@@ -355,14 +704,14 @@ public class map extends AppCompatActivity {
             bmpWidth = newWidth;
             bmpHeight = newHeight;
             vm.invalidate();
-        }
+        } // 지도 확대 축소 함수
 
         protected void drawMoveMatrix() {
             Log.i("drawMoveMatrix", "enter");
             vm.invalidate();
             bmpsavex = bmpmovex;
             bmpsavey = bmpmovey;
-        }
+        } // 지도 움직임 함수
 
         OnTouchListener MyOnTouchListener
                 = new OnTouchListener() {
